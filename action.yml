@@ -5,8 +5,8 @@ inputs:
     description: 'The base64 encoded kubeconfig needed to connect to the cluster'
     required: true
     default: ''
-  deployment-yml:
-    description: 'The deployment yml file'
+  deployment-yml-path:
+    description: 'The path to the deployment.yml file'
     required: true
     default: ''
 runs:
