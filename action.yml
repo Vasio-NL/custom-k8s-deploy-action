@@ -12,8 +12,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Checkout
-      uses: actions/checkout@v3
     - name: 'Build kubernetes configuration'
       uses: imranismail/setup-kustomize@v2
     - run: echo ${{ inputs.kube-config-base64 }} | base64 -d > kubeconfig.yml
