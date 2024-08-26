@@ -5,24 +5,58 @@ inputs:
     description: 'The base64 encoded kubeconfig needed to connect to the cluster'
     required: true
     default: ''
-  deployment-yml-path:
-    description: 'The path to the deployment.yml file'
+  container-registry-url:
+    description: 'URL for the container registry'
+    required: true
+    default: ''
+  container-repository-name:
+    description: 'The name of the container repository (middle part of the image tag)'
     required: true
     default: ''
 runs:
   using: "composite"
   steps:
-    - name: 'Build kubernetes configuration'
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Acquire kubeconfig.yml
+      run: echo ${{ inputs.kube-config-base64 }} | base64 -d > kubeconfig.yml
+      shell: bash
+
+    - name: Acquire deployment.yml
+      run: |
+        kustomize create
+        kustomize edit add resource "manifests/${{github.ref_name == github.event.repository.default_branch && 'production' || github.ref_name}}"
+        cd_versions=$(kubectl --kubeconfig=kubeconfig.yml get configmap cd-versions -o jsonpath='{.data}')
+        echo $cd_versions
+        cd_images=($(echo $cd_versions | jq -r 'keys[]'))
+        for image in "${cd_images[@]}"; do
+        kustomize edit set image $image=${{ inputs.container-registry-url }}/${{ inputs.container-repository-name }}/$image:$(echo $cd_versions | jq -r ".\"$image\"")
+        done
+        kustomize build > deployment.yml
+      shell: bash
+
+    - name: Set up kustomize
       uses: imranismail/setup-kustomize@v2
-    - run: echo ${{ inputs.kube-config-base64 }} | base64 -d > kubeconfig.yml
+
+    - name: Create kubeconfig.yml
+      run: echo ${{ inputs.kube-config-base64 }} | base64 -d > kubeconfig.yml
       shell: bash
-    - run: cat ${{ inputs.deployment-yml-path }}
+
+    - name: Deployment.yml
+      run: cat deployment.yml
       shell: bash
-    - run: curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+
+    - name: Acquire kubectl
+      run: curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
       shell: bash
-    - run: kubectl --kubeconfig=kubeconfig.yml apply -f ${{ inputs.deployment-yml-path }}
+
+    - name: Apply deployment.yml
+      run: kubectl --kubeconfig=kubeconfig.yml apply -f deployment.yml
       shell: bash
-    - run: |
+
+    - name: Check deployment status
+      run: |
         kubectl --kubeconfig=kubeconfig.yml get deploy --output name | \
         timeout 300 \
         xargs -n1 -t \
