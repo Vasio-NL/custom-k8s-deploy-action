@@ -1,0 +1,27 @@
+name: 'Kubernetes deploy action'
+description: 'Pushes Vasio images to a kubernetes cluster. Requires kubernetes cluster credentials'
+inputs:
+  kube-config-base64:
+    description: 'The base64 encoded kubeconfig needed to connect to the cluster'
+    required: true
+    default: ''
+  deployment-yml:
+    description: 'The deployment yml file'
+    required: true
+    default: ''
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: 'Build kubernetes configuration'
+      uses: imranismail/setup-kustomize@v2
+    - run: echo ${{ inputs.kube-config-base64 }} | base64 -d > kubeconfig.yml
+    - run: cat ${{ inputs.deployment-yml }}
+    - run: curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    - run: kubectl --kubeconfig=kubeconfig.yml apply -f ${{ inputs.deployment-yml }}
+    - run: |
+        kubectl --kubeconfig=kubeconfig.yml get deploy --output name | \
+        timeout 300 \
+        xargs -n1 -t \
+        kubectl --kubeconfig=kubeconfig.yml rollout status
