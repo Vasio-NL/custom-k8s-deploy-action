@@ -17,11 +17,16 @@ runs:
     - name: 'Build kubernetes configuration'
       uses: imranismail/setup-kustomize@v2
     - run: echo ${{ inputs.kube-config-base64 }} | base64 -d > kubeconfig.yml
+      shell: bash
     - run: cat ${{ inputs.deployment-yml }}
+      shell: bash
     - run: curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+      shell: bash
     - run: kubectl --kubeconfig=kubeconfig.yml apply -f ${{ inputs.deployment-yml }}
+      shell: bash
     - run: |
         kubectl --kubeconfig=kubeconfig.yml get deploy --output name | \
         timeout 300 \
         xargs -n1 -t \
         kubectl --kubeconfig=kubeconfig.yml rollout status
+      shell: bash
