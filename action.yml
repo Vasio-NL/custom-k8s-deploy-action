@@ -1,5 +1,5 @@
 name: 'Kubernetes deploy action'
-description: 'Pushes Vasio images to a kubernetes cluster. Requires kubernetes cluster credentials'
+description: 'Pushes images to a kubernetes cluster. Requires kubernetes cluster credentials'
 inputs:
   kube-config-base64:
     description: 'The base64 encoded kubeconfig needed to connect to the cluster'
