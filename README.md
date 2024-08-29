@@ -1,9 +1,29 @@
 ## Kubernetes deploy action
 
 This Github Action deploys images from a container registry to a kubernetes cluster.
+For deploying images from Amazon ECR, see the [ECR deploy action](https://github.com/Vasio-NL/custom-k8s-deploy-ECR-action).
+
 This action is intended to be used with the custom [build and push action](https://github.com/Vasio-NL/custom-build-and-push-action).
 
 Fetches the latest version of the given image from a kubernetes configmap, then gets the image from the container registry and pushes it to the kubernetes cluster.
+
+### Inputs
+
+| Name | Description | Required |
+| --- | --- | --- |
+| kube-config-base64 | The base64 encoded kubeconfig needed to connect to the cluster | true |
+| container-registry-url | URL for the container registry | true |
+| container-repository-name | The name of the container repository | true |
+
+The container repository name is the name that is prefixed to the image name. An example image:
+
+`registry.digitalocean.com/vasio/cool-project:latest`
+
+In this example:
+- The <b>registry url</b> is `registry.digitalocean.com`.
+- The <b>container repository name</b> is `vasio`.
+- The <b>image name</b> is `cool-project`.
+
 
 ### Example usage
 
@@ -22,15 +42,6 @@ release:
           container-repository-name: vasio
           kube-config-base64: ${{ secrets.KUBE_CONFIG_B64 }}
 ```
-
-The container repository name is the name that is prefixed to the image name. An example image:
-
-`registry.digitalocean.com/vasio/cool-project:latest`
-
-In this example:
-- The <b>registry url</b> is `registry.digitalocean.com`.
-- The <b>container repository name</b> is `vasio`. 
-- The <b>image name</b> is `cool-project`.
 
 ### For developers: Updating the action
 When making changes, make sure to tag new versions so they can be used in Github workflows. The action uses semantic versioning.
