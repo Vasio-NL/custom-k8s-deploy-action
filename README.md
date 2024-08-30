@@ -24,6 +24,26 @@ In this example:
 - The <b>container registry name</b> is `vasio`.
 - The <b>image name</b> is `cool-project`.
 
+### Example usage
+
+The following is an example release job:
+
+```
+release:
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
+    needs: [ build_app ]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Deploy to kubernetes
+        uses: Vasio-NL/custom-k8s-deploy-action@v1
+        with:
+          container-registry-url: ${{ vars.REGISTRY_URL }}
+          container-registry-name: vasio
+          kube-config-base64: ${{ secrets.KUBE_CONFIG_B64 }}
+```
 ### Deployment manifests
 
 This action uses [kustomize](https://kustomize.io/) to bundle the deployment manifests. It assumes that the manifests are located in the `manifests` directory at the root level of the repository.
@@ -79,27 +99,6 @@ patchesStrategicMerge:
 ```
 
 
-
-### Example usage
-
-The following is an example release job:
-
-```
-release:
-    runs-on: ubuntu-latest
-    environment: ${{ github.ref_name }}
-    needs: [ build_app ]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Deploy to kubernetes
-        uses: Vasio-NL/custom-k8s-deploy-action@v1
-        with:
-          container-registry-url: ${{ vars.REGISTRY_URL }}
-          container-registry-name: vasio
-          kube-config-base64: ${{ secrets.KUBE_CONFIG_B64 }}
-```
 
 ### For developers: Updating the action
 When making changes, make sure to tag new versions so they can be used in Github workflows. The action uses semantic versioning.
