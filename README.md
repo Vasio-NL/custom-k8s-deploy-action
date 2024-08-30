@@ -24,6 +24,61 @@ In this example:
 - The <b>container registry name</b> is `vasio`.
 - The <b>image name</b> is `cool-project`.
 
+### Deployment manifests
+
+This action uses [kustomize](https://kustomize.io/) to bundle the deployment manifests. It assumes that the manifests are located in the `manifests` directory at the root level of the repository.
+It checks for a folder containing the name of the branch. An exception is made for the default branch, which will always check `manifests/production`.
+
+<b>Important:</b> The action assumes your repositoy's default branch is the production branch, and will always look for the production manifests when running this action from the default branch.
+
+
+#### Example manifests structure
+
+```
+manifests
+├── base
+│   ├── kustomization.yml
+│   ├── deployment.yml
+│   └── service.yml
+├── production
+│   ├── kustomization.yml
+│   ├── update-deployment.yml
+│   └── update-service.yml
+└── staging
+    ├── kustomization.yml
+    ├── update-deployment.yml
+    └── update-service.yml
+```
+
+Recommended usage is to have a base folder containing your manifests, for example `manifests/base`.
+Inside should be a kustomization.yml, which references the manifests you want to deploy.
+
+An example:
+
+```
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yml
+  - service.yml
+```
+
+You can then patch these manifest files using kustomize for each environment stored in `manifests/<environment>` by adding a kustomize.yml file which contains a patchesStrategicMerge section.
+The environment name should match the branch name from which the action is running.
+
+An example:
+
+```
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../base
+patchesStrategicMerge:
+  - update-deployment.yml
+  - update-service.yml
+```
+
+
 
 ### Example usage
 
