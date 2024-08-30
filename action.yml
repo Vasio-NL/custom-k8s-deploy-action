@@ -9,16 +9,13 @@ inputs:
     description: 'URL for the container registry'
     required: true
     default: ''
-  container-repository-name:
-    description: 'The name of the container repository (middle part of the image tag)'
+  container-registry-name:
+    description: 'The name of the container registry (middle part of the image tag)'
     required: true
     default: ''
 runs:
   using: "composite"
   steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-
     - name: Acquire kubeconfig.yml
       run: echo ${{ inputs.kube-config-base64 }} | base64 -d > kubeconfig.yml
       shell: bash
@@ -31,7 +28,7 @@ runs:
         echo $cd_versions
         cd_images=($(echo $cd_versions | jq -r 'keys[]'))
         for image in "${cd_images[@]}"; do
-        kustomize edit set image $image=${{ inputs.container-registry-url }}/${{ inputs.container-repository-name }}/$image:$(echo $cd_versions | jq -r ".\"$image\"")
+        kustomize edit set image $image=${{ inputs.container-registry-url }}/${{ inputs.container-registry-name }}/$image:$(echo $cd_versions | jq -r ".\"$image\"")
         done
         kustomize build > deployment.yml
       shell: bash

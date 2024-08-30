@@ -9,19 +9,19 @@ Fetches the latest version of the given image from a kubernetes configmap, then 
 
 ### Inputs
 
-| Name | Description | Required |
-| --- | --- | --- |
-| kube-config-base64 | The base64 encoded kubeconfig needed to connect to the cluster | true |
-| container-registry-url | URL for the container registry | true |
-| container-repository-name | The name of the container repository | true |
+| Name                    | Description | Required |
+|-------------------------| --- | --- |
+| kube-config-base64      | The base64 encoded kubeconfig needed to connect to the cluster | true |
+| container-registry-url  | URL for the container registry | true |
+| container-registry-name | The name of the container registry | true |
 
-The container repository name is the name that is prefixed to the image name. An example image:
+The container registry name is the name that is prefixed to the image name. An example image:
 
 `registry.digitalocean.com/vasio/cool-project:latest`
 
 In this example:
 - The <b>registry url</b> is `registry.digitalocean.com`.
-- The <b>container repository name</b> is `vasio`.
+- The <b>container registry name</b> is `vasio`.
 - The <b>image name</b> is `cool-project`.
 
 
@@ -35,11 +35,14 @@ release:
     environment: ${{ github.ref_name }}
     needs: [ build_app ]
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Deploy to kubernetes
         uses: Vasio-NL/custom-k8s-deploy-action@v1
         with:
           container-registry-url: ${{ vars.REGISTRY_URL }}
-          container-repository-name: vasio
+          container-registry-name: vasio
           kube-config-base64: ${{ secrets.KUBE_CONFIG_B64 }}
 ```
 
