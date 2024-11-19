@@ -24,9 +24,9 @@ runs:
         kustomize create
         kustomize edit add resource "manifests/${{github.ref_name == github.event.repository.default_branch && 'production' || github.ref_name}}"
         cd_versions=$(kubectl --kubeconfig=kubeconfig.yml get configmap cd-versions -o jsonpath='{.data}')
-        echo $cd_versions
         cd_images=($(echo $cd_versions | jq -r 'keys[]'))
         for image in "${cd_images[@]}"; do
+        echo $image
         kustomize edit set image $(echo $cd_versions | jq -r ".\"$image\"" | jq -r 'split(":")[0]')=${{ inputs.container-registry-url }}/$(echo $cd_versions | jq -r ".\"$image\"")
         done
         kustomize build > deployment.yml
