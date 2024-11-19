@@ -27,7 +27,7 @@ runs:
         cd_images=($(echo $cd_versions | jq -r 'keys[]'))
         for image in "${cd_images[@]}"; do
         echo $(echo $cd_versions | jq -r ".\"$image\"")
-        kustomize edit set image $(echo $cd_versions | jq -r ".\"$image\"" | jq -r 'split(":")[0]')=${{ inputs.container-registry-url }}/$(echo $cd_versions | jq -r ".\"$image\"")
+        kustomize edit set image $(echo $cd_versions | jq -r ".\"$image\"" | awk -F: '{print $1}')=${{ inputs.container-registry-url }}/$(echo $cd_versions | jq -r ".\"$image\"")
         done
         kustomize build > deployment.yml
       shell: bash
