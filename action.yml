@@ -26,7 +26,7 @@ runs:
         cd_versions=$(kubectl --kubeconfig=kubeconfig.yml get configmap cd-versions -o jsonpath='{.data}')
         cd_images=($(echo $cd_versions | jq -r 'keys[]'))
         for image in "${cd_images[@]}"; do
-        echo $image
+        echo $(echo $cd_versions | jq -r ".\"$image\"")
         kustomize edit set image $(echo $cd_versions | jq -r ".\"$image\"" | jq -r 'split(":")[0]')=${{ inputs.container-registry-url }}/$(echo $cd_versions | jq -r ".\"$image\"")
         done
         kustomize build > deployment.yml
