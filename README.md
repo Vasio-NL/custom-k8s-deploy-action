@@ -9,10 +9,12 @@ Fetches the latest version of the given image from a kubernetes configmap, then 
 
 ### Inputs
 
-| Name                    | Description | Required |
-|-------------------------| --- | --- |
-| kube-config-base64      | The base64 encoded kubeconfig needed to connect to the cluster | true |
-| container-registry-url  | URL for the container registry | true |
+| Name                    | Description                                                                                                                                                                          | Required |
+|-------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|
+| kube-config-base64      | The base64 encoded kubeconfig needed to connect to the cluster                                                                                                                       | true     |
+| container-registry-url  | URL for the container registry                                                                                                                                                       | true     |
+| watch-deployment-status | Whether to watch the rollout status of deployments. This will make the action fail if the deployment does not succeed within 5 minutes. Disable for cron-only deploys. Default: true | false    |
+| print-manifests         | Debug setting: Whether to print the result of the kustomize build which merges the manifests. Default: false                                                                         | false |
 
 #### An example Azure image:
 

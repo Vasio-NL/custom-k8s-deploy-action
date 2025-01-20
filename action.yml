@@ -9,6 +9,14 @@ inputs:
     description: 'URL for the container registry'
     required: true
     default: ''
+  watch-deployment-status:
+    description: 'Whether to watch if the deployment succeeds. Disable for cron-only deploys.'
+    required: false
+    default: 'true'
+  print-manifests:
+    description: 'Whether to print the result of the kustomize build which merges the manifests.'
+    required: false
+    default: 'false'
 runs:
   using: "composite"
   steps:
@@ -35,7 +43,8 @@ runs:
       run: echo ${{ inputs.kube-config-base64 }} | base64 -d > kubeconfig.yml
       shell: bash
 
-    - name: Deployment.yml
+    - name: Print deployment.yml
+      if: inputs.print-manifests == 'true'
       run: cat deployment.yml
       shell: bash
 
@@ -48,6 +57,7 @@ runs:
       shell: bash
 
     - name: Check deployment status
+      if: inputs.watch-deployment-status == 'true'
       run: |
         kubectl --kubeconfig=kubeconfig.yml get deploy --output name | \
         timeout 300 \
